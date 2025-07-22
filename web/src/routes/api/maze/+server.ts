@@ -6,6 +6,8 @@ import { generateDailyMaze } from "$lib/server/maze/generateDailyMaze";
 import { fetchUserMaze } from "$lib/user/fetchUserMaze";
 import { upsertUserMaze } from "$lib/user/upsertUserMaze";
 import { fetchUser } from "$lib/user/fetchUser";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { err, ok } from "$lib/result";
 
 export const POST = async ({ request }) => {
     const { id } = await request.json();
@@ -38,51 +40,30 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
         return responseError("Error fetching user maze data", 500, error);
     }
 
+    let { data: dailyMazeSource } = await fetchOriginalMaze(today);
+
+    if (!dailyMazeSource) {
+        const result = await fetch("/api/maze", {
+            method: "POST",
+            body: JSON.stringify({ id: today }),
+        });
+
+        dailyMazeSource = (await result.json()) as SourceMaze;
+    }
+
     if (!userRow) {
-        let { data: dailyMazeSource } = await fetchOriginalMaze(today);
-
-        if (!dailyMazeSource) {
-            const result = await fetch("/api/maze", {
-                method: "POST",
-                body: JSON.stringify({ id: today }),
-            });
-
-            dailyMazeSource = (await result.json()) as SourceMaze;
-        }
-
-        const { maze: sourceMaze, position, moves } = dailyMazeSource;
-
-        const restrictedMaze = sourceMaze.map(row => row.map(() => "b"));
-
-        const { data, error: processError } = processPlayerMove(
-            restrictedMaze,
+        const { data, error } = await updateDailyUserMaze(
+            supabase,
+            user,
             dailyMazeSource,
-            position,
+            today,
         );
 
-        if (processError) {
-            return responseError(
-                "Error processing player move",
-                500,
-                processError,
-            );
-        }
-
-        userRow = {
-            id: user.id,
-            updated_at: today,
-            prizes: [],
-            score: 0,
-            maze: data.result,
-            position,
-            moves,
-        };
-
-        const { error } = await upsertUserMaze(supabase, userRow);
-
         if (error) {
-            return responseError("Error inserting user maze data", 500, error);
+            return responseError("Error updating daily user maze", 500, error);
         }
+
+        userRow = data;
     }
 
     const { maze, position, updated_at, moves, prizes } = userRow;
@@ -98,3 +79,48 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
 
     return responseStatus(200, { token });
 };
+
+async function updateDailyUserMaze(
+    supabase: SupabaseClient,
+    user: User,
+    sourceMaze: SourceMaze,
+    today: string,
+) {
+    const { maze, position, moves } = sourceMaze;
+
+    const restrictedMaze = maze.map(row => row.map(() => "b"));
+
+    const { data, error: processError } = processPlayerMove(
+        restrictedMaze,
+        sourceMaze,
+        position,
+    );
+
+    if (processError) {
+        return err({
+            message: "Error processing player move",
+            error: processError,
+        });
+    }
+
+    const result = {
+        id: user.id,
+        updated_at: today,
+        prizes: [],
+        score: 0,
+        maze: data.result,
+        position,
+        moves,
+    };
+
+    const { error } = await upsertUserMaze(supabase, result);
+
+    if (error) {
+        return err({
+            message: "Error upserting user maze data",
+            error,
+        });
+    }
+
+    return ok(result);
+}
