@@ -4,6 +4,18 @@ import { ok } from "$lib/result";
 
 const SECRET = SUPABASE_KEY;
 
+export type UserPrize = [number, number, boolean];
+
+export type UserToken = {
+    user: string;
+    moves: number;
+    score: number;
+    maze: Maze;
+    position: Coordinates;
+    updated_at: string;
+    prizes: UserPrize[];
+}
+
 function generateSignature(data: string) {
     return crypto
         .createHmac('sha256', SECRET)
@@ -11,14 +23,14 @@ function generateSignature(data: string) {
         .digest('hex');
 }
 
-export function sign<T>(data: T): Result<string> {
+export function sign(data: UserToken): Result<string> {
     const payload = JSON.stringify(data);
     const signature = generateSignature(payload);
 
     return ok(`${Buffer.from(payload).toString('base64')}.${signature}`);
 }
 
-export function verify(token: string): Result<Record<string, any> | null> {
+export function verify(token: string): Result<UserToken | null> {
     try {
         const [encoded, signature] = token.split('.');
         if (!encoded || !signature) return ok(null);

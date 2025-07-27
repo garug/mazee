@@ -17,7 +17,8 @@ export const POST: RequestHandler = async ({
         return notAuthenticated;
     }
 
-    const { maze, position, updated_at, user, moves } = tokenPayload;
+    const { maze, position, updated_at, user, moves, score, prizes } =
+        tokenPayload;
 
     const { data: originalMazeSource } = await fetchOriginalMaze(updated_at);
 
@@ -34,14 +35,21 @@ export const POST: RequestHandler = async ({
     }
 
     const {
-        data: { result: mazeUpdated, revealed },
+        data: { result: mazeUpdated, revealed, prize },
     } = processPlayerMove(maze, originalMazeSource, nextPosition);
 
-    const remainingMoves = revealed.length > 0 ? moves - 1 : moves;
+    const newScore = score + (prize || 0);
+
+    const remainingMoves = prize || revealed.length > 0 ? moves - 1 : moves;
 
     const { data: updatedRows, error } = await supabase
         .from("user_maze")
         .update({
+            prizes: (prize ? [...prizes, nextPosition] : prizes).map(p => [
+                p[0],
+                p[1],
+            ]),
+            score: newScore,
             maze: mazeUpdated,
             position: nextPosition,
             moves: remainingMoves,
@@ -67,6 +75,14 @@ export const POST: RequestHandler = async ({
         maze: mazeUpdated,
         position: nextPosition,
         updated_at,
+        prizes: originalMazeSource.prizes
+            .filter(p1 => mazeUpdated[p1[0]][p1[1]] !== "b")
+            .map(p => [
+                p[0],
+                p[1],
+                prizes.some(p2 => p2[0] === p[0] && p2[1] === p[1]),
+            ]),
+        score: newScore,
     });
 
     return responseStatus(202, {

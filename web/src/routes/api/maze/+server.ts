@@ -1,4 +1,4 @@
-import { sign } from "$lib/mazeToken";
+import { sign, type UserPrize } from "$lib/mazeToken";
 import { processPlayerMove } from "$lib/maze/processPlayerMove";
 import { notAuthenticated, responseError, responseStatus } from "$lib/response";
 import { fetchOriginalMaze } from "$lib/server/maze/fetchMaze";
@@ -51,7 +51,7 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
         dailyMazeSource = (await result.json()) as SourceMaze;
     }
 
-    if (!userRow) {
+    if (!userRow || userRow.updated_at !== today) {
         const { data, error } = await updateDailyUserMaze(
             supabase,
             user,
@@ -60,13 +60,31 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
         );
 
         if (error) {
-            return responseError("Error updating daily user maze", 500, error);
+            return responseError("Error up dating daily user maze", 500, error);
         }
 
         userRow = data;
     }
 
-    const { maze, position, updated_at, moves, prizes } = userRow;
+    const {
+        maze,
+        score,
+        position,
+        updated_at,
+        moves,
+        prizes: acquired,
+    } = userRow;
+
+    const prizes: UserPrize[] = [
+        ...acquired.map(p => [p[0], p[1], true] as UserPrize),
+        ...dailyMazeSource.prizes
+            .filter(
+                p1 =>
+                    !acquired.some(p2 => p2[0] === p1[0] && p2[1] === p1[1]) &&
+                    maze[p1[0]][p1[1]] !== "b",
+            )
+            .map(p => [p[0], p[1], false] as UserPrize),
+    ];
 
     const { data: token } = sign({
         user: user.id,
@@ -75,6 +93,7 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
         maze,
         position,
         updated_at,
+        score,
     });
 
     return responseStatus(200, { token });

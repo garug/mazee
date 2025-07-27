@@ -10,12 +10,14 @@
     import TileLocked from "$lib/components/tiles/TileLocked.svelte";
     import DirectionIndicator from "$lib/components/DirectioinIndicator.svelte";
     import TileBlocked from "$lib/components/tiles/TileBlocked.svelte";
+    import TilePrize from "$lib/components/tiles/TilePrize.svelte";
+    import type { UserToken } from "$lib/mazeToken";
 
     function getConnections(
         maze: string[][],
         r: number,
         c: number,
-        characters: string[]
+        characters: string[],
     ): Direction[] {
         const connections: Direction[] = [];
 
@@ -31,8 +33,8 @@
 
     let token = $state(data.token);
 
-    const { maze, position, moves } = $derived(
-        JSON.parse(atob(token.split(".")[0]))
+    const { maze, position, moves, prizes, score }: UserToken = $derived(
+        JSON.parse(atob(token.split(".")[0])),
     );
 
     const isGameOver = $derived(moves <= 0);
@@ -42,7 +44,7 @@
         ArrowUp: "top", w: "top", W: "top",
         ArrowDown: "bottom", s: "bottom", S: "bottom",
         ArrowLeft: "left", a: "left", A: "left",
-        ArrowRight: "right", d: "right", D: "right"
+        ArrowRight: "right", d: "right", D: "right",
     };
 
     async function handleKeydown(e: KeyboardEvent) {
@@ -66,7 +68,7 @@
 
         const changeSuccess = await fetch("/api/maze/step", {
             method: "POST",
-            body: JSON.stringify({ moveTo, token })
+            body: JSON.stringify({ moveTo, token }),
         });
 
         if (!changeSuccess.ok) {
@@ -92,7 +94,7 @@
             {position}
             connections={getConnections(maze, position[1], position[0], [
                 ".",
-                "a"
+                "a",
             ])}
         />
     {/if}
@@ -105,6 +107,9 @@
                 style:grid-column="{colIndex + 1} / {colIndex + 2}"
                 style:grid-row="{rowIndex + 1} / {rowIndex + 2}"
             >
+                {#if prizes.some(prize => prize[1] === rowIndex && prize[0] === colIndex && !prize[2])}
+                    <TilePrize />
+                {/if}
                 {#if tile === "b"}
                     <TileLocked />
                 {:else if tile === "#"}
@@ -114,7 +119,7 @@
                         maze,
                         rowIndex,
                         colIndex,
-                        [".", "a"]
+                        [".", "a"],
                     )}
                     {#if connections.length === 0}
                         <TileEmpty />
@@ -136,7 +141,7 @@
 </div>
 <div>
     <p>Available Steps:<br /> {moves}</p>
-    <p>Score:<br /> 0</p>
+    <p>Score:<br /> {score}</p>
 </div>
 
 <style>
