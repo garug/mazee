@@ -11,7 +11,7 @@
         <p>Enter your email to sign in</p>
 
         <form class="form" method="POST">
-            <input type="email" name="email" placeholder="hello@example.com" />
+            <input type="email" autocomplete="email" name="email" placeholder="hello@example.com" />
             <button type="submit">Sign in</button>
             <p>{PUBLIC_URL}</p>
         </form>
