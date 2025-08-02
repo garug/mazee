@@ -1,4 +1,5 @@
 import type { Actions } from "./$types";
+import { PUBLIC_URL } from "$env/static/public";
 
 export const actions = {
     default: async ({ request, locals: { supabase } }) => {
@@ -8,7 +9,7 @@ export const actions = {
         await supabase.auth.signInWithOtp({
             email,
             options: {
-                emailRedirectTo: "http://localhost:5173"
+                emailRedirectTo: PUBLIC_URL,
             }
         });
     }

@@ -62,7 +62,7 @@
             (moveTo === "top" && y === 0) ||
             (moveTo === "bottom" && y === maze.length - 1) ||
             (moveTo === "left" && x === 0) ||
-            (moveTo === "right" && x === maze.length - 1)
+            (moveTo === "right" && x === maze[0].length - 1)
         )
             return;
 
@@ -85,7 +85,7 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div class="tilemap" style:width="{maze.length * TileSize}px">
+<div class="tilemap" style:width="{maze[0].length * TileSize}px">
     {#if isGameOver}
         <h1 class="game-over">Game Over</h1>
     {/if}
@@ -139,7 +139,7 @@
         {/each}
     {/each}
 </div>
-<div>
+<div class="info">
     <p>Available Steps:<br /> {moves}</p>
     <p>Score:<br /> {score}</p>
 </div>
@@ -166,5 +166,11 @@
         text-shadow: 0 2px 2px rgba(0, 0, 0, 0.8);
         font-size: 3em;
         line-height: 0.6em;
+    }
+
+    .info {
+        padding: 8px;
+        border-radius: 8px;
+        background-color: #50313E;
     }
 </style>

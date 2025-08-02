@@ -2,4 +2,4 @@
     import Tile from "$lib/components/Tile.svelte";
 </script>
 
-<Tile position={[39, 14]}></Tile>
+<Tile color="#583541" position={[40, 14]}></Tile>
