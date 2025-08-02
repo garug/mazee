@@ -1,0 +1,2 @@
+[build.environment]
+PUBLIC_DEPLOY_PRIME_URL = "${DEPLOY_PRIME_URL}"

@@ -9,6 +9,7 @@ export const POST: RequestHandler = async ({
     request,
     locals: { supabase },
 }) => {
+    console.log("aqui step")
     const { moveTo, token } = await request.json();
 
     const { data: tokenPayload } = verify(token);
