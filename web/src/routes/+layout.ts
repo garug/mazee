@@ -1,4 +1,4 @@
-import { PUBLIC_SUPABASE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+import { PUBLIC_SUPABASE_KEY, PUBLIC_SUPABASE_URL, PUBLIC_URL } from "$env/static/public";
 import type { LayoutLoad } from "./$types";
 import {
     createBrowserClient,
@@ -23,6 +23,13 @@ function supabaseServer(cookies: { name: string; value: string }[]) {
             getAll() {
                 return cookies;
             }
+        },
+        cookieOptions: {
+            name: 'supabase-session',
+            domain: PUBLIC_URL,
+            path: "/",
+            sameSite: "lax",
+            maxAge: 60 * 60 * 24 * 7,
         }
     });
 }

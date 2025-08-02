@@ -1,2 +1,0 @@
-[build]
-  command = "PUBLIC_URL=$DEPLOY_PRIME_URL npm run build"
