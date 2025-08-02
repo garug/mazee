@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { PUBLIC_URL } from "$env/static/public";
     const { data } = $props();
 
     const { session } = $derived(data);
@@ -12,11 +13,15 @@
         <form class="form" method="POST">
             <input type="email" name="email" placeholder="hello@example.com" />
             <button type="submit">Sign in</button>
+            <p>{PUBLIC_URL}</p>
         </form>
-        {:else}
+    {:else}
         <p>Welcome</p>
-        <a href="/daily">Play daily maze</a>
+        <a href="/daily" class="button">Play daily maze</a>
     {/if}
+    <p class="privacy">
+        <a href="#">Política de privacidade</a>
+    </p>
 </div>
 
 <style>
@@ -28,5 +33,9 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
+    }
+
+    .privacy {
+        font-size: 16px;
     }
 </style>
