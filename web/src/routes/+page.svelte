@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { PUBLIC_URL } from "$env/static/public";
     const { data } = $props();
 
     const { session } = $derived(data);
@@ -13,7 +12,6 @@
         <form class="form" method="POST">
             <input type="email" autocomplete="email" name="email" placeholder="hello@example.com" />
             <button type="submit">Sign in</button>
-            <p>{PUBLIC_URL}</p>
         </form>
     {:else}
         <p>Welcome</p>
