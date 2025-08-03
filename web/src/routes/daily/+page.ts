@@ -6,6 +6,8 @@ export const load: PageLoad = async ({ fetch }) => {
 
     const { token, error: e } = await response.json();
 
+    console.log({token})
+
     if (e) {
         error(response.status, e);
     }
