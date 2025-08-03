@@ -1,4 +1,4 @@
-import { parse } from "tldts";
+import { getDomain } from "tldts";
 import { PUBLIC_SUPABASE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 import type { LayoutLoad } from "./$types";
 import {
@@ -16,7 +16,7 @@ function supabaseBrowser() {
 }
 
 function supabaseServer(cookies: { name: string; value: string }[], url: URL) {
-    const domain = parse(url.href).domain;
+    const domain = getDomain(url.href);
 
     if (!domain) console.warn(`Could not find domain: ${domain}`);
 
