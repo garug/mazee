@@ -1,3 +1,4 @@
+import { parse } from "tldts";
 import { PUBLIC_SUPABASE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 import type { LayoutLoad } from "./$types";
 import {
@@ -15,6 +16,10 @@ function supabaseBrowser() {
 }
 
 function supabaseServer(cookies: { name: string; value: string }[], url: URL) {
+    const domain = parse(url.href).domain;
+
+    if (!domain) console.warn(`Could not find domain: ${domain}`);
+
     return createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_KEY, {
         global: {
             fetch,
@@ -26,7 +31,7 @@ function supabaseServer(cookies: { name: string; value: string }[], url: URL) {
         },
         cookieOptions: {
             name: "supabase-session",
-            domain: url.hostname,
+            domain: domain || url.hostname,
             path: "/",
             sameSite: "lax",
             maxAge: 60 * 60 * 24 * 7,

@@ -28,8 +28,6 @@ export const POST = async ({ request }) => {
 export const GET = async ({ fetch, locals: { supabase } }) => {
     const { data: user } = await fetchUser(supabase);
 
-    console.log("aqui1");
-
     if (!user) {
         return notAuthenticated;
     }
@@ -38,15 +36,11 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
 
     let { data: userRow, error } = await fetchUserMaze(supabase);
 
-    console.log("aqui2");
-
     if (error) {
         return responseError("Error fetching user maze data", 500, error);
     }
 
     let { data: dailyMazeSource } = await fetchOriginalMaze(today);
-
-    console.log("aqui3");
 
     if (!dailyMazeSource) {
         const result = await fetch("/api/maze", {
@@ -56,8 +50,6 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
 
         dailyMazeSource = (await result.json()) as SourceMaze;
     }
-
-    console.log("aqui4");
 
     if (!userRow || userRow.updated_at !== today) {
         const { data, error } = await updateDailyUserMaze(
@@ -83,8 +75,6 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
         prizes: acquired,
     } = userRow;
 
-    console.log("aqui5");
-
     const prizes: UserPrize[] = [
         ...acquired.map(p => [p[0], p[1], true] as UserPrize),
         ...dailyMazeSource.prizes
@@ -105,8 +95,6 @@ export const GET = async ({ fetch, locals: { supabase } }) => {
         updated_at,
         score,
     });
-
-    console.log("aqui6");
 
     return responseStatus(200, { token });
 };
