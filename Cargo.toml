@@ -1,0 +1,12 @@
+[package]
+name = "mazee"
+version = "1.0.0"
+edition = "2021"
+authors = ["garug <allefff@gmail.com>"]
+description = "Maze generation and bfs heatmap visualization in Rust"
+license = "MIT"
+repository = "https://github.com/garug/mazee"
+
+[dependencies]
+itertools = "0.12"
+rand = "0.8"
